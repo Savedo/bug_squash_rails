@@ -3,8 +3,6 @@ ENV["RAILS_ENV"] ||= 'test'
 require 'spec_helper'
 require File.expand_path("../../config/environment", __FILE__)
 require 'rspec/rails'
-require 'database_cleaner'
-require 'capybara/poltergeist'
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -19,14 +17,6 @@ Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
 # If you are not using ActiveRecord, you can remove this line.
 ActiveRecord::Migration.maintain_test_schema!
 
-Capybara.register_driver :poltergeist do |app|
-  options = {
-    timeout: 150, js_errors: true, debug: false, window_size: [1280, 1024],
-    phantomjs_options: ["--ignore-ssl-errors=true"]
-  }
-end
-Capybara.javascript_driver = :poltergeist
-
 RSpec.configure do |config|
   # Run specs in random order to surface order dependencies
   config.order = :random
@@ -34,17 +24,10 @@ RSpec.configure do |config|
   config.include Devise::TestHelpers, type: :controller
   config.include Warden::Test::Helpers
 
-  config.use_transactional_fixtures = false
+  config.use_transactional_fixtures = true
 
   config.before(:suite) do
-    DatabaseCleaner.strategy = :transaction
-    DatabaseCleaner.clean_with(:truncation)
     Warden.test_mode!
-  end
-
-  config.before(:each) do |example|
-    DatabaseCleaner.strategy = example.metadata[:js] ? :truncation : :transaction
-    DatabaseCleaner.start
   end
 
   config.after(:each) do
@@ -52,7 +35,6 @@ RSpec.configure do |config|
 
     Warden.test_reset!
     Capybara.reset_sessions!
-    DatabaseCleaner.clean
   end
 
   # RSpec Rails can automatically mix in different behaviours to your tests
