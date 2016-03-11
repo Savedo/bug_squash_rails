@@ -14,5 +14,6 @@ feature "Sign up" do
 
     customer = Customer.last
     expect(customer.email).to eq "my@email.com"
+    expect(customer.terms_and_conditions).to be_truthy
   end
 end
